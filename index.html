@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekly Food Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="auth" class="authbox" hidden></section>
+<div class="wrap" id="appWrap">
+  <header>
+    <h1>Weekly food plan</h1>
+    <p>A plan for each day, Sunday to Saturday, a shopping list, and a tracker that shows how regular you've been.</p>
+    <p class="acct"><span id="sync" aria-live="polite"></span></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-plan" aria-selected="true" aria-controls="plan">Day plan</button>
+    <button class="tab" role="tab" id="t-track" aria-selected="false" aria-controls="track">Tracker</button>
+    <button class="tab" role="tab" id="t-shop" aria-selected="false" aria-controls="shop">Shopping list</button>
+  </div>
+
+  <section id="plan" role="tabpanel" aria-labelledby="t-plan">
+    <div class="dayNav" id="dayNav"></div>
+    <div class="carousel" id="days" tabindex="0" aria-label="Daily cards, swipe sideways"></div>
+    <p class="hint">Swipe sideways for the next day. Upcoming days unlock on their date.</p>
+  </section>
+
+  <section id="track" role="tabpanel" aria-labelledby="t-track" hidden>
+    <div class="stats" id="stats"></div>
+    <div class="panel">
+      <h2>This week</h2>
+      <p>Basics and day plan for each day so far.</p>
+      <div class="legend"><span><i style="background:var(--leaf)"></i>Every-day basics</span><span><i style="background:var(--turmeric)"></i>Day plan</span></div>
+      <div id="week"></div>
+    </div>
+    <div class="panel">
+      <h2>Last 5 weeks</h2>
+      <p id="thrNote"></p>
+      <div class="hm" id="hm"></div>
+      <div class="scale"><span>Less</span><i style="background:var(--card)"></i><i style="background:var(--leaf-soft)"></i><i style="background:color-mix(in srgb,var(--leaf) 45%,var(--card))"></i><i style="background:var(--leaf)"></i><i style="background:var(--turmeric)"></i><span>All done</span></div>
+      <div class="detail" id="detail"></div>
+    </div>
+    <button class="reset" id="resetHist">Reset tracker history</button>
+  </section>
+
+  <section id="shop" role="tabpanel" aria-labelledby="t-shop" hidden>
+    <div class="shop-top">
+      <p id="shopCount"></p>
+      <button class="reset" id="resetShop">Clear ticks</button>
+    </div>
+    <div class="trip"><strong>Two trips work best.</strong> Saturday night for Sunday to Tuesday, then Tuesday or Wednesday for the rest, especially fish and leafy shak.</div>
+    <div class="grid" id="cats"></div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
