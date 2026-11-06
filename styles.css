@@ -1,7 +1,7 @@
 :root{
-  --bg:#F2F5EC; --card:#FFFFFF; --ink:#1E2B24; --muted:#5E6E64; --line:#DCE3D3;
-  --leaf:#2E6B4E; --leaf-soft:#E1EEDF; --on-leaf:#FFFFFF; --turmeric:#E3A008; --turmeric-soft:#FBEFC8; --chili:#C4402A; --on-chili:#FFFFFF; --on-turmeric:#2A1D00;
-  --head:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --bg:#FFF4B8; --card:#FFFDF0; --ink:#3B1708; --muted:#7A4B33; --line:#F0D77A;
+  --leaf:#D63A00; --leaf-soft:#FFE680; --on-leaf:#FFFFFF; --turmeric:#FFC800; --turmeric-soft:#FFE98A; --chili:#B3141B; --on-chili:#FFFFFF; --on-turmeric:#3B1708;
+  --head:'Fredoka','Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --body:'Figtree','Segoe UI',system-ui,sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -9,13 +9,13 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#121A15; --card:#1B2620; --ink:#E8EFE6; --muted:#9BAA9F; --line:#2B3A31;
-    --leaf:#6FC59A; --leaf-soft:#223A2D; --on-leaf:#10200F; --turmeric:#F0B93A; --turmeric-soft:#3A3217; --chili:#F27A63; --on-chili:#2B0F08; --on-turmeric:#2A1D00;
+    --bg:#1F0D06; --card:#2E1710; --ink:#FFF0C2; --muted:#D4AE8C; --line:#4D2A1A;
+    --leaf:#FF6A33; --leaf-soft:#4F2412; --on-leaf:#2A0E00; --turmeric:#FFD833; --turmeric-soft:#4A3A10; --chili:#FF8F80; --on-chili:#2B0A06; --on-turmeric:#2A1D00;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#121A15; --card:#1B2620; --ink:#E8EFE6; --muted:#9BAA9F; --line:#2B3A31;
-  --leaf:#6FC59A; --leaf-soft:#223A2D; --on-leaf:#10200F; --turmeric:#F0B93A; --turmeric-soft:#3A3217; --chili:#F27A63; --on-chili:#2B0F08; --on-turmeric:#2A1D00;
+  --bg:#1F0D06; --card:#2E1710; --ink:#FFF0C2; --muted:#D4AE8C; --line:#4D2A1A;
+  --leaf:#FF6A33; --leaf-soft:#4F2412; --on-leaf:#2A0E00; --turmeric:#FFD833; --turmeric-soft:#4A3A10; --chili:#FF8F80; --on-chili:#2B0A06; --on-turmeric:#2A1D00;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
@@ -123,3 +123,11 @@ header p{margin:0;color:var(--muted);max-width:56ch}
 .acct{margin-top:10px!important;font-size:14px}
 #sync{color:var(--muted)}
 #sync.err{color:var(--chili)}
+
+/* brand header */
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 0 rgba(59,23,8,.25)}
+.tabs,.panel,.day,.cat,.stat{border-width:2px}
+.tab[aria-selected="true"],.dayNav button[aria-current="true"]{box-shadow:0 2px 0 rgba(59,23,8,.25)}
+.item input{border-width:2.5px}
+.day.today{border-color:var(--chili)}
