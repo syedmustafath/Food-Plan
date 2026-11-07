@@ -52,7 +52,12 @@
       <div class="scale"><span>Less</span><i style="background:var(--card)"></i><i style="background:var(--leaf-soft)"></i><i style="background:color-mix(in srgb,var(--leaf) 45%,var(--card))"></i><i style="background:var(--leaf)"></i><i style="background:var(--turmeric)"></i><span>All done</span></div>
       <div class="detail" id="detail"></div>
     </div>
-    <button class="reset" id="resetHist">Reset tracker history</button>
+    <div class="panel">
+      <h2>Export</h2>
+      <p>Your full history, one row per day, ready for Google Sheets.</p>
+      <div class="exp-row"><button class="primary" id="exportCsv" type="button">Export CSV</button><button class="reset" id="copySheets" type="button">Copy for Sheets</button></div>
+      <p class="note" id="exportMsg" role="status"></p>
+    </div>
   </section>
 
   <section id="shop" role="tabpanel" aria-labelledby="t-shop" hidden>

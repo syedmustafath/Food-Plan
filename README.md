@@ -25,3 +25,7 @@ Import the repo in Vercel as a static project (Framework Preset: Other, no build
 ## Privacy note
 
 There are no accounts, so the anon key in `config.js` can read and write the two tables. That is fine for a personal app, but anyone who has your site URL can view and edit the data. If you ever want it locked down, add Supabase Auth and restrict the policies to `authenticated`.
+
+## Exporting to Google Sheets
+
+Tracker tab -> Export. **Export CSV** opens the share sheet on iPhone (choose Save to Files, or share to Google Sheets) and downloads a file on desktop. **Copy for Sheets** copies the same table so you can paste it straight into cell A1. One row per day from your first logged day to today, with basics/plan counts, percent done, on-track flag, a column per daily basic, counts per food group, and the plan items you ticked.

@@ -266,25 +266,56 @@ function show(which){
 }
 TABS.forEach(t=>$('t-'+t).onclick=()=>show(t));
 
-/* ---------- resets ---------- */
+/* ---------- shopping reset ---------- */
 $('resetShop').onclick=async()=>{
   data.shop={};document.querySelectorAll('.cat input').forEach(b=>b.checked=false);refresh();
   setSync('Saving...');
   const {error}=await sb.from('shop_ticks').delete().neq('item_id','');error?fail(error):ok();
 };
-const rh=$('resetHist');let rt;
-rh.onclick=async()=>{
-  if(rh.dataset.arm){
-    clearTimeout(rt);delete rh.dataset.arm;rh.textContent='Reset tracker history';
-    data.log={};
-    document.querySelectorAll('.day input').forEach(x=>x.checked=false);
-    refresh();
-    setSync('Saving...');
-    const {error}=await sb.from('log_entries').delete().gte('day','1900-01-01');error?fail(error):ok();
-  }else{
-    rh.dataset.arm=1;rh.textContent='Tap again to erase all history';
-    rt=setTimeout(()=>{delete rh.dataset.arm;rh.textContent='Reset tracker history';},4000);
+/* ---------- export for Google Sheets ---------- */
+const GROUPS=['Protein','Carb','Veggies','Fruit','Snack'];
+function exportRows(){
+  setDates();
+  const keys=Object.keys(data.log).filter(k=>{const e=data.log[k];return e.b.length||e.p.length;}).sort();
+  const head=['date','weekday','basics_done','basics_total','plan_done','plan_total','percent_done','on_track',
+    ...BASICS.map(b=>'basic: '+b),...GROUPS.map(g=>g.toLowerCase()+'_done'),'plan_items_done'];
+  const rows=[head];
+  if(!keys.length)return rows;
+  const [y,m,d]=keys[0].split('-').map(Number);
+  for(let day=new Date(y,m-1,d);day<=today;day=addDays(day,1)){
+    const e=data.log[key(day)]||{b:[],p:[]},c=counts(day),valid=new Set(planIds(day.getDay()));
+    const plan=e.p.filter(x=>valid.has(x));
+    rows.push([key(day),DAYS[day.getDay()].n,c.b,c.bt,c.p,c.pt,Math.round(c.pct*100),c.pct>=THR?1:0,
+      ...BASICS.map(b=>e.b.includes(b)?1:0),
+      ...GROUPS.map(g=>plan.filter(x=>x.startsWith(g+':')).length),
+      plan.map(x=>x.split(':').slice(1).join(':')).join('; ')]);
   }
+  return rows;
+}
+const csvCell=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+function exportCSV(){return exportRows().map(r=>r.map(csvCell).join(',')).join('\n');}
+function exportTSV(){return exportRows().map(r=>r.map(v=>String(v).replace(/[\t\n]/g,' ')).join('\t')).join('\n');}
+function exportMsg(t,err){const el=$('exportMsg');el.textContent=t;el.className='note'+(err?' err':'');}
+
+$('exportCsv').onclick=async()=>{
+  if(exportRows().length<2)return exportMsg('Nothing to export yet. Tick something off first.',true);
+  const name='food-plan-'+TODAY+'.csv',text=exportCSV();
+  const file=new File([text],name,{type:'text/csv'});
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Food plan history'});
+      return exportMsg('Exported '+(exportRows().length-1)+' days.');
+    }
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  exportMsg('Downloaded '+name+'.');
+};
+$('copySheets').onclick=async()=>{
+  if(exportRows().length<2)return exportMsg('Nothing to export yet. Tick something off first.',true);
+  try{await navigator.clipboard.writeText(exportTSV());exportMsg('Copied. Open Google Sheets, tap cell A1 and paste.');}
+  catch(e){exportMsg('Could not copy. Use Export CSV instead.',true);}
 };
 
 /* ---------- live sync across devices ---------- */
