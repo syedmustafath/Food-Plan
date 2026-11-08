@@ -137,3 +137,13 @@ header p{margin:0;color:var(--muted);max-width:56ch}
 .primary{font:600 15px var(--body);background:var(--leaf);color:var(--on-leaf);border:0;border-radius:999px;padding:10px 18px;cursor:pointer;box-shadow:0 2px 0 rgba(59,23,8,.25)}
 #exportMsg{margin:10px 0 0;min-height:1.4em}
 #exportMsg.err{color:var(--chili)}
+
+/* sort toggle + last-week card */
+.viewbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:14px;color:var(--muted);font-weight:600}
+.seg{display:flex;padding:3px;gap:3px;background:var(--card);border:2px solid var(--line);border-radius:999px}
+.seg button{font:600 14px var(--body);color:var(--muted);background:none;border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--leaf);color:var(--on-leaf)}
+.seg button:focus-visible{outline:3px solid var(--turmeric);outline-offset:2px}
+.badge.prev{background:var(--muted);color:var(--card)}
+.dayNav button.prevDay{border-style:dashed}
+.badge{white-space:nowrap}

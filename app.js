@@ -8,7 +8,7 @@ const DAYS=[
  {n:'Friday',g:[['Protein',['Chicken','Eggs']],['Carb',['Whole grain bread']],['Veggies',['Lau','Potol','Carrots']],['Fruit',['Papaya','Dates (2-3)']],['Snack',['Lassi']]]},
  {n:'Saturday',g:[['Protein',['Beef','Daal']],['Carb',['Brown rice']],['Veggies',['Spinach','Begun','Tomatoes']],['Fruit',['Banana','Guava']],['Snack',['Chana']]]}
 ];
-const BASICS=['Doi or milk','Handful of nuts or seeds','2-3 veggies','1-2 fruits','Unsweetened tea','Turmeric and cumin in cooking','Honey, 1 tsp max'];
+const BASICS=['Doi or milk','Handful of nuts or seeds','2-3 veggies','1-2 fruits','Unsweetened tea','Honey, 1 tsp max'];
 const SHOP=[
  ['Proteins',[['Eggs','3 days'],['Chicken','2 meals'],['Beef','2 meals'],['Rui mach','1'],['Sardines','1'],['Puti mach','1'],['Daal','3 meals'],['Boot','1 meal'],['Doi and milk','daily']]],
  ['Carbs',[['Brown rice','3 meals'],['Oats','2'],['Chira','1'],['Whole grain bread','1 loaf']]],
@@ -18,6 +18,24 @@ const SHOP=[
  ['Pantry',[['Almonds','restock as needed'],['Peanuts',''],['Cashews',''],['Chia seeds',''],['Flax seeds',''],['Coconut',''],['Olive or mustard oil',''],['Honey',''],['Turmeric',''],['Cumin','']]]
 ];
 const THR=0.7;
+
+/* Which meal each food belongs to (used by the "By meal" view). Edit freely; ids/tracking are unaffected. */
+const MEALS=['Breakfast','Lunch','Snack','Dinner'];
+const MEAL_OF={
+  Protein:{'Eggs':'Breakfast','Chicken':'Dinner','Beef':'Dinner'},   // others (fish, daal, boot) default to Lunch
+  Carb:{'Oats':'Breakfast','Chira':'Breakfast','Whole grain bread':'Breakfast'}, // rice defaults to Lunch
+  Veggies:{'Lau':'Dinner','Potol':'Dinner','Beans':'Dinner','Cauliflower':'Dinner','Mishti kumra':'Dinner','Bhendi':'Dinner','Begun':'Dinner'}, // shak and salad default to Lunch
+  Fruit:{'Banana':'Breakfast','Papaya':'Breakfast','Lemon':'Lunch'},
+  Snack:{}
+};
+const DEFAULT_MEAL={Protein:'Lunch',Carb:'Lunch',Veggies:'Lunch',Fruit:'Snack',Snack:'Snack'};
+const mealOf=(g,it)=>(MEAL_OF[g]&&MEAL_OF[g][it])||DEFAULT_MEAL[g];
+let VIEW='group';
+try{VIEW=localStorage.getItem('food-plan-view')==='meal'?'meal':'group';}catch(e){}
+function sections(d){
+  if(VIEW==='group')return d.g.map(([lab,items])=>[lab,items.map(it=>({g:lab,it}))]);
+  return MEALS.map(m=>[m,d.g.flatMap(([lab,items])=>items.filter(it=>mealOf(lab,it)===m).map(it=>({g:lab,it})))]).filter(x=>x[1].length);
+}
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 /* ---------- date helpers (recomputed on every build so a long-open tab rolls over at midnight) ---------- */
@@ -111,22 +129,25 @@ function build(){
   const keepScroll=daysEl.scrollLeft,hadInit=daysEl.dataset.init;
   daysEl.innerHTML='';nav.innerHTML='';catsEl.innerHTML='';shopTotal=0;
 
-  DAYS.forEach((d,i)=>{
-    const date=addDays(weekStart,i),dk=key(date),future=i>todayIdx;
+  // Last Saturday stays editable (for updating after midnight on Sunday), then Sunday..Saturday of this week.
+  const slots=[{di:6,date:addDays(weekStart,-1),prev:true},...DAYS.map((d,i)=>({di:i,date:addDays(weekStart,i)}))];
+  slots.forEach(sl=>{
+    const d=DAYS[sl.di],date=sl.date,dk=key(date),isToday=dk===TODAY,future=date>today;
     const card=document.createElement('article');
-    card.className='day'+(i===todayIdx?' today':'')+(future?' future':'');
-    card.innerHTML=`<div class="day-head"><div><h3>${d.n}${i===todayIdx?'<span class="badge">Today</span>':''}</h3><small>${fmt(date)}</small></div><div class="head-r"><span class="count"></span><button class="clear" type="button">Clear ticks</button></div></div><div class="bar"><i></i></div>`;
+    card.className='day'+(isToday?' today':'')+(future?' future':'');
+    card.dataset.day=dk;
+    card.innerHTML=`<div class="day-head"><div><h3>${d.n}${isToday?'<span class="badge">Today</span>':''}${sl.prev?'<span class="badge prev">Last week</span>':''}</h3><small>${fmt(date)}</small></div><div class="head-r"><span class="count"></span><button class="clear" type="button">Clear ticks</button></div></div><div class="bar"><i></i></div>`;
     if(future){const p=document.createElement('p');p.className='note';p.textContent='Opens on '+fmt(date)+'.';card.append(p);}
     const bg=document.createElement('div');bg.className='group basicsg';
     bg.innerHTML='<div class="glabel">Every day</div>';
     BASICS.forEach(t=>bg.append(box(entry(dk).b.includes(t),t,'',on=>{toggle(entry(dk).b,t,on);saveDay(dk);refresh(true);},future)));
     card.append(bg);
-    d.g.forEach(([lab,items])=>{
+    sections(d).forEach(([lab,items])=>{
       const g=document.createElement('div');g.className='group';
       g.innerHTML=`<div class="glabel">${lab}</div>`;
-      items.forEach(it=>{
-        const id=lab+':'+it;
-        g.append(box(entry(dk).p.includes(id),it,'',on=>{toggle(entry(dk).p,id,on);saveDay(dk);refresh(true);},future));
+      items.forEach(({g:grp,it})=>{
+        const id=grp+':'+it;
+        g.append(box(entry(dk).p.includes(id),it,VIEW==='meal'?grp:'',on=>{toggle(entry(dk).p,id,on);saveDay(dk);refresh(true);},future));
       });
       card.append(g);
     });
@@ -149,13 +170,16 @@ function build(){
   });
 
   cards.forEach((c,i)=>{
-    const b=document.createElement('button');b.type='button';b.textContent=DAYS[i].n.slice(0,3);b.setAttribute('aria-label',DAYS[i].n);
-    if(i===todayIdx)b.classList.add('isToday');
+    const dn=DAYS[new Date(c.dataset.day+'T00:00').getDay()].n;
+    const b=document.createElement('button');b.type='button';b.textContent=dn.slice(0,3);
+    b.setAttribute('aria-label',dn+(i===0?' (last week)':''));
+    if(c.dataset.day===TODAY)b.classList.add('isToday');
+    if(i===0)b.classList.add('prevDay');
     b.onclick=()=>goTo(i,true);nav.append(b);
   });
   if(hadInit)daysEl.scrollLeft=keepScroll;
   refresh();
-  setTimeout(()=>{if(!daysEl.dataset.init){goTo(todayIdx,false);daysEl.dataset.init=1;}markActive();},0);
+  setTimeout(()=>{if(!daysEl.dataset.init){goTo(todayIdx+1,false);daysEl.dataset.init=1;}markActive();},0);
 }
 
 /* ---------- tracker maths ---------- */
@@ -254,6 +278,17 @@ function markActive(){
 }
 let raf;daysEl.addEventListener('scroll',()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(markActive);});
 
+/* ---------- view toggle: food group / meal ---------- */
+function syncView(){
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===VIEW));
+}
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{
+  if(VIEW===b.dataset.v)return;
+  VIEW=b.dataset.v;try{localStorage.setItem('food-plan-view',VIEW);}catch(e){}
+  syncView();build();
+});
+syncView();
+
 /* ---------- tabs ---------- */
 const TABS=['plan','track','shop'];
 function show(which){
@@ -261,7 +296,7 @@ function show(which){
     $('t-'+t).setAttribute('aria-selected',t===which);
     $(t).hidden=t!==which;
   });
-  if(which==='plan')setTimeout(()=>{if(!daysEl.dataset.init){goTo(todayIdx,false);daysEl.dataset.init=1;}markActive();},0);
+  if(which==='plan')setTimeout(()=>{if(!daysEl.dataset.init){goTo(todayIdx+1,false);daysEl.dataset.init=1;}markActive();},0);
   if(which==='track')renderTracker();
 }
 TABS.forEach(t=>$('t-'+t).onclick=()=>show(t));
