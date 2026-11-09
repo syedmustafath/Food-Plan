@@ -29,12 +29,19 @@ const MEAL_OF={
   Snack:{}
 };
 const DEFAULT_MEAL={Protein:'Lunch',Carb:'Lunch',Veggies:'Lunch',Fruit:'Snack',Snack:'Snack'};
-const mealOf=(g,it)=>(MEAL_OF[g]&&MEAL_OF[g][it])||DEFAULT_MEAL[g];
+// Per-day exceptions so every day covers every meal (Tuesday and Thursday have no egg/oats/bread breakfast) and lunch isn't a single item.
+const DAY_MEAL={
+  Tuesday:{'Fruit:Guava':'Breakfast'},
+  Wednesday:{'Veggies:Mishti kumra':'Lunch'},   // otherwise lunch would be tomatoes only
+  Thursday:{'Fruit:Apple':'Breakfast'},
+  Friday:{'Veggies:Lau':'Lunch'}                // otherwise lunch would be carrots only
+};
+const mealOf=(g,it,day)=>(DAY_MEAL[day]&&DAY_MEAL[day][g+':'+it])||(MEAL_OF[g]&&MEAL_OF[g][it])||DEFAULT_MEAL[g];
 let VIEW='group';
 try{VIEW=localStorage.getItem('food-plan-view')==='meal'?'meal':'group';}catch(e){}
 function sections(d){
   if(VIEW==='group')return d.g.map(([lab,items])=>[lab,items.map(it=>({g:lab,it}))]);
-  return MEALS.map(m=>[m,d.g.flatMap(([lab,items])=>items.filter(it=>mealOf(lab,it)===m).map(it=>({g:lab,it})))]).filter(x=>x[1].length);
+  return MEALS.map(m=>[m,d.g.flatMap(([lab,items])=>items.filter(it=>mealOf(lab,it,d.n)===m).map(it=>({g:lab,it})))]).filter(x=>x[1].length);
 }
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
